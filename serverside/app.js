@@ -68,5 +68,53 @@ app.delete("/students/:id", (req, res, next) => {
     });
 });
 
+
+//serve incoming put requests to /students 
+app.put('/students/:id', (req, res, next) => {
+    console.log("id: " + req.params.id)
+    // check that the parameter id is valid 
+    if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+        //find a document and set new first and last names 
+        Student.findOneAndUpdate(
+            { _id: req.params.id },
+            {
+                $set: {
+                    firstName: req.body.firstName,
+                    lastName: req.body.lastName
+                }
+            },
+            { new: true }
+        )
+            .then((student) => {
+                if (student) { //what was updated 
+                    console.log(student);
+                } else {
+                    console.log("no data exist for this id");
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    } else {
+        console.log("please provide correct id");
+    }
+});
+
+
+//find a student based on the id
+app.get('/students/:id', (req, res, next) => {
+    //call mongoose method findOne (MongoDB db.Students.findOne())
+    Student.findOne({ _id: req.params.id })
+        //if data is returned, send data as a response 
+        .then(data => {
+            res.status(200).json(data)
+            console.log(data);
+        })
+        //if error, send internal server error
+        .catch(err => {
+            console.log('Error: ${err}');
+            res.status(500).json(err);
+        });
+});
 //to use this middleware in other parts of the application
 module.exports = app;
